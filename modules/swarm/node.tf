@@ -12,6 +12,5 @@ resource "template_file" "cloud_config" {
     name = "${format("swarm-%02d", count.index + 1)}"
     discovery_token = "${file("${path.module}/.token")}"
     node_count = "${var.node_count}"
-
   }
 }
