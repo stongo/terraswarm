@@ -19,6 +19,6 @@ while [ $i -lt $replicas ]; do
 		--name swarm0${i} \
 		--volume var_lib_swarm0${i}.img.qcow2
 	i=$(($i+1))
-	sleep 5
+	sleep 2
 done
 trap cleanup ERR

@@ -6,9 +6,6 @@ coreos:
   locksmith:
     window-start: Sun 05:00
     window-length: 1h
-  flannel:
-    interface: $private_ipv4
-    etcd_endpoints: http://127.0.0.1:2379
   etcd2:
     name: ${name}
     initial-advertise-peer-urls: http://$private_ipv4:2380
@@ -26,18 +23,17 @@ coreos:
             [Service]
             Environment="DOCKER_OPTS=-H=0.0.0.0:2376 -H unix:///var/run/docker.sock --cluster-advertise eth0:2376 --cluster-store etcd://$private_ipv4:2379"
       command: restart
-    - name: update-engine.service
-      command: restart
     - name: swarm-agent.service
       command: start
       content: |
         [Unit]
         Description=Docker Swarm Agent Container
         After=docker.service
+        After=swarm-manager.service
         Requires=docker.service
 
         [Service]
-        TimeoutStartSec=0
+        TimeoutStartSec=15
         Restart=always
         ExecStartPre=-/usr/bin/docker stop swarm-agent
         ExecStartPre=-/usr/bin/docker rm -f swarm-agent
@@ -55,7 +51,7 @@ coreos:
         Requires=docker.service
 
         [Service]
-        TimeoutStartSec=0
+        TimeoutStartSec=15
         Restart=always
         ExecStartPre=-/usr/bin/docker stop swarm-manager
         ExecStartPre=-/usr/bin/docker rm -f swarm-manager
@@ -78,8 +74,14 @@ coreos:
         ExecStartPre=-/usr/bin/docker stop cadvisor
         ExecStartPre=-/usr/bin/docker rm -f cadvisor
         ExecStartPre=-/usr/bin/docker pull google/cadvisor
-        ExecStart=docker run --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro --publish=8080:8080 --detach=true --name=cadvisor google/cadvisor
-
+        ExecStart=/usr/bin/docker run \
+          --volume=/:/rootfs:ro \
+          --volume=/var/run:/var/run:rw \
+          --volume=/sys:/sys:ro \
+          --volume=/var/lib/docker/:/var/lib/docker:ro \
+          --name=cadvisor\
+          -p 8080:8080 \
+           google/cadvisor
         [Install]
         WantedBy=multi-user.target 
 write_files:
