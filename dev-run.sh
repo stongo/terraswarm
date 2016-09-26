@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 mkdir -p tmp
-replicas=3
+replicas=2
 i=0
 function cleanup {
 	set +e
