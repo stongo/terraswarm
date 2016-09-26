@@ -48,6 +48,7 @@ coreos:
         [Unit]
         Description=Docker Swarm Manager Container
         After=docker.service
+        After=etcd2.service
         Requires=docker.service
 
         [Service]
